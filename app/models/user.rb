@@ -13,6 +13,10 @@ module Ashikawa
         attribute :id, String
         attribute :rev, String
       end
+
+      def key
+        self.id.split('/').last
+      end
     end
   end
 end
