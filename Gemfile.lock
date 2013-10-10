@@ -26,6 +26,11 @@ GEM
       thread_safe (~> 0.1)
       tzinfo (~> 0.3.37)
     arel (4.0.0)
+    ashikawa-core (0.9.0)
+      equalizer (~> 0.0.5)
+      faraday (~> 0.8.6)
+      json (~> 1.8.0)
+      null_logger (~> 0.0.1)
     atomic (1.1.14)
     builder (3.1.4)
     coffee-rails (4.0.0)
@@ -35,8 +40,11 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.6.3)
+    equalizer (0.0.7)
     erubis (2.7.0)
     execjs (2.0.2)
+    faraday (0.8.8)
+      multipart-post (~> 1.2.0)
     hike (1.2.3)
     i18n (0.6.5)
     jbuilder (1.5.2)
@@ -52,6 +60,8 @@ GEM
     mime-types (1.25)
     minitest (4.7.5)
     multi_json (1.8.1)
+    multipart-post (1.2.0)
+    null_logger (0.0.1)
     polyglot (0.3.3)
     rack (1.5.2)
     rack-test (0.6.2)
@@ -107,6 +117,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  ashikawa-core
   coffee-rails (~> 4.0.0)
   jbuilder (~> 1.2)
   jquery-rails
