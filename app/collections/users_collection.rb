@@ -44,6 +44,13 @@ module Ashikawa
           model
         end
 
+        def replace(model)
+          return false unless model.valid?
+          document = collection.replace(model.key, model.attributes.except(:id, :rev))
+          model.rev = document["_rev"]
+          model
+        end
+
         def collection_name
           self.name.gsub(/Collection\z/,'').underscore
         end
