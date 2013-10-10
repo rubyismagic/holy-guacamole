@@ -9,6 +9,9 @@ module Ashikawa
         include ActiveModel::Validations
         include ActiveModel::Naming
         include Virtus.model
+
+        attribute :id, String
+        attribute :rev, String
       end
     end
   end
