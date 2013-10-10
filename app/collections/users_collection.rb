@@ -2,6 +2,26 @@ require 'active_support/concern'
 
 module Ashikawa
   module Rails
+    class SimpleQuery
+      attr_reader :collection
+      attr_accessor :example
+
+      include Enumerable
+
+      def initialize(collection)
+        @collection = collection.collection
+        @mapper = collection.method(:document_to_model)
+      end
+
+      def each
+        return to_enum(__callee__) unless block_given?
+
+        collection.query.by_example(example).each do |document|
+          yield @mapper.call(document)
+        end
+      end
+    end
+
     module Collection
       extend ActiveSupport::Concern
 
@@ -54,6 +74,12 @@ module Ashikawa
         # TODO: Translate Exception
         def by_key(key)
           document_to_model(collection.fetch(key))
+        end
+
+        def by_example(example)
+          query = SimpleQuery.new(self)
+          query.example = example
+          query
         end
 
         def collection_name
