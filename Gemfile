@@ -47,3 +47,6 @@ end
 
 # Use debugger
 # gem 'debugger', group: [:development, :test]
+
+gem 'better_errors', group: :development
+gem 'binding_of_caller', group: :development
