@@ -16,13 +16,29 @@ module Ashikawa
       def each
         return to_enum(__callee__) unless block_given?
 
-        collection.query.by_example(example).each do |document|
+        options = {}
+        options[:limit] = limit if limit.present?
+        options[:skip] = skip if skip.present?
+
+        collection.query.by_example(example, options).each do |document|
           yield @mapper.call(document)
         end
       end
 
       def first
         @mapper.call(collection.query.first_example(example))
+      end
+
+      def limit(limit = nil)
+        return @limit if limit.nil?
+        @limit = limit
+        self
+      end
+
+      def skip(skip = nil)
+        return @skip if skip.nil?
+        @skip = skip
+        self
       end
     end
 
