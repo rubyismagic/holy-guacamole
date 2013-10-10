@@ -13,16 +13,28 @@ module Ashikawa
           end
         end
 
+        # FIXME: Find a better name
         def collection
           database[collection_name]
         end
 
+        def model_class
+          self.name.gsub(/Collection\z/,'').singularize.constantize
+        end
+
+        def document_to_model(document)
+          model_class.new(document.hash)
+        end
+
         def all
-          collection.query.all.to_a
+          collection.query.all.map do |document|
+            document_to_model(document)
+          end
         end
 
         def save(model)
           collection.create_document(model.attributes)
+          model
         end
 
         def collection_name
