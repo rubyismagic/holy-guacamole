@@ -3,33 +3,33 @@ require 'active_support/concern'
 module Ashikawa
   module Rails
     class SimpleQuery
-      attr_reader :collection
+      attr_reader :query
       attr_accessor :example
 
       include Enumerable
 
       def initialize(collection)
-        @collection = collection.collection
+        @query = collection.collection.query
         @mapper = collection.method(:document_to_model)
       end
 
       def each
         return to_enum(__callee__) unless block_given?
 
-        options = {}
-        options[:limit] = limit if limit.present?
-        options[:skip] = skip if skip.present?
+        iterator = ->(document) { yield @mapper.call(document) }
 
-        collection.query.by_example(example, options).each do |document|
-          yield @mapper.call(document)
+        if example
+          query.by_example(example, options).each(&iterator)
+        else
+          query.all(options).each(&iterator)
         end
       end
 
       def first
-        if limit or skip
+        if limit or skip or example.blank?
           to_a.first
         else
-          @mapper.call(collection.query.first_example(example))
+          @mapper.call(query.first_example(example))
         end
       end
 
@@ -43,6 +43,15 @@ module Ashikawa
         return @skip if skip.nil?
         @skip = skip
         self
+      end
+
+      private
+
+      def options
+        options = {}
+        options[:limit] = limit if limit.present?
+        options[:skip] = skip if skip.present?
+        options
       end
     end
 
@@ -74,9 +83,7 @@ module Ashikawa
         end
 
         def all
-          collection.query.all.map do |document|
-            document_to_model(document)
-          end
+          SimpleQuery.new(self)
         end
 
         # TODO: Refactor duplication
