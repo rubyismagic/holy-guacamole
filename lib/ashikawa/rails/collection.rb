@@ -16,7 +16,7 @@ module Ashikawa
       def each
         return to_enum(__callee__) unless block_given?
 
-        iterator = ->(document) { yield @mapper.map(document) }
+        iterator = ->(document) { yield @mapper.document_to_model(document) }
 
         if example
           query.by_example(example, options).each(&iterator)
@@ -29,7 +29,7 @@ module Ashikawa
         if limit or skip or example.blank?
           to_a.first
         else
-          @mapper.map(query.first_example(example))
+          @mapper.document_to_model(query.first_example(example))
         end
       end
 
@@ -75,12 +75,8 @@ module Ashikawa
           self.name.gsub(/Collection\z/,'').singularize.constantize
         end
 
-        def document_to_model(document)
-          mapper.map(document)
-        end
-
         def mapper
-          @mapper ||= DocumentToModelMapper.new(model_class)
+          @mapper ||= DocumentModelMapper.new(model_class)
         end
 
         def all
@@ -109,7 +105,7 @@ module Ashikawa
 
         # TODO: Translate Exception
         def by_key(key)
-          document_to_model(collection.fetch(key))
+          mapper.document_to_model(collection.fetch(key))
         end
 
         def by_example(example)
@@ -135,7 +131,7 @@ module Ashikawa
       end
     end
 
-    class DocumentToModelMapper
+    class DocumentModelMapper
       attr_reader :model_class
 
       def initialize(model_class)
@@ -170,8 +166,7 @@ module Ashikawa
         document
       end
 
-      # TODO: Rename map to something more distinct
-      def map(document)
+      def document_to_model(document)
         model = model_class.new(document.hash)
         model.key = document.key
         model.rev = document.revision
