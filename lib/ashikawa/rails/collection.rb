@@ -93,7 +93,7 @@ module Ashikawa
           stamp = Time.now
           model.created_at = stamp
           model.updated_at = stamp
-          document = collection.create_document(model.attributes)
+          document = collection.create_document(mapper.model_to_document(model))
           model.key = document.key
           model.rev = document.revision
           model
@@ -102,7 +102,7 @@ module Ashikawa
         def replace(model)
           return false unless model.valid?
           model.updated_at = Time.now
-          document = collection.replace(model.key, model.attributes.except(:key, :rev))
+          document = collection.replace(model.key, mapper.model_to_document(model).except(:key, :rev))
           model.rev = document["_rev"]
           model
         end
@@ -127,6 +127,11 @@ module Ashikawa
         def collection_name
           self.name.gsub(/Collection\z/,'').underscore
         end
+
+        # TODO: Rename map to something more distinct
+        def map(&block)
+          mapper.instance_eval(&block)
+        end
       end
     end
 
@@ -135,8 +140,37 @@ module Ashikawa
 
       def initialize(model_class)
         @model_class = model_class
+        @embeds = []
       end
 
+      def embeds(attribute_name)
+        @embeds << attribute_name
+      end
+
+      def model_to_document(model)
+        document = model.attributes
+        @embeds.each do |attribute_name|
+          embedded_attribute = document[attribute_name]
+
+          document[attribute_name] = if embedded_attribute.is_a? Array
+                                       embedded_attribute.map { |embedded_model| clean_embedded_model(embedded_model) }
+                                     else
+                                       clean_embedded_model embedded_attribute
+                                     end
+        end
+        document
+      end
+
+      def clean_embedded_model(model)
+        document = model.attributes
+        document.delete(:rev)
+        document.delete(:key)
+        document[:created_at] ||= Time.now
+        document[:updated_at] = Time.now
+        document
+      end
+
+      # TODO: Rename map to something more distinct
       def map(document)
         model = model_class.new(document.hash)
         model.key = document.key
@@ -146,4 +180,3 @@ module Ashikawa
     end
   end
 end
-
