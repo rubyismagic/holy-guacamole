@@ -76,10 +76,8 @@ module Ashikawa
         end
 
         def document_to_model(document)
-          model = model_class.new(document.hash)
-          model.key = document.key
-          model.rev = document.revision
-          model
+          mapper = DocumentToModelMapper.new(model_class)
+          mapper.map(document)
         end
 
         def all
@@ -126,6 +124,21 @@ module Ashikawa
         def collection_name
           self.name.gsub(/Collection\z/,'').underscore
         end
+      end
+    end
+
+    class DocumentToModelMapper
+      attr_reader :model_class
+
+      def initialize(model_class)
+        @model_class = model_class
+      end
+
+      def map(document)
+        model = model_class.new(document.hash)
+        model.key = document.key
+        model.rev = document.revision
+        model
       end
     end
   end
