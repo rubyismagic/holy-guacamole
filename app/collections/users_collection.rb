@@ -37,6 +37,7 @@ module Ashikawa
 
         # TODO: Refactor duplication
         def save(model)
+          return false unless model.valid?
           document = collection.create_document(model.attributes)
           model.id = document.id
           model.rev = document.revision
