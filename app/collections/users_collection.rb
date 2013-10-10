@@ -51,6 +51,11 @@ module Ashikawa
           model
         end
 
+        # TODO: Translate Exception
+        def by_key(key)
+          document_to_model(collection.fetch(key))
+        end
+
         def collection_name
           self.name.gsub(/Collection\z/,'').underscore
         end
