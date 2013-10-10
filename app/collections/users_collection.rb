@@ -26,7 +26,11 @@ module Ashikawa
       end
 
       def first
-        @mapper.call(collection.query.first_example(example))
+        if limit or skip
+          to_a.first
+        else
+          @mapper.call(collection.query.first_example(example))
+        end
       end
 
       def limit(limit = nil)
