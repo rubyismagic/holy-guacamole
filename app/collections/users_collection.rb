@@ -113,6 +113,12 @@ module Ashikawa
           query
         end
 
+        # TODO: Exception Translation
+        def delete(key)
+          collection.fetch(key).delete
+          key
+        end
+
         def collection_name
           self.name.gsub(/Collection\z/,'').underscore
         end
