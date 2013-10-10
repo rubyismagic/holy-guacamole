@@ -8,10 +8,19 @@ module Ashikawa
       included do
         include ActiveModel::Validations
         include ActiveModel::Naming
+        include ActiveModel::Conversion
         include Virtus.model
 
         attribute :key, String
         attribute :rev, String
+      end
+
+      def id
+        key
+      end
+
+      def persisted?
+        key.present?
       end
     end
   end
