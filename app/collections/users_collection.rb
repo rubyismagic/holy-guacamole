@@ -24,7 +24,7 @@ module Ashikawa
 
         def document_to_model(document)
           model = model_class.new(document.hash)
-          model.id = document.id
+          model.key = document.key
           model.rev = document.revision
           model
         end
@@ -39,14 +39,14 @@ module Ashikawa
         def save(model)
           return false unless model.valid?
           document = collection.create_document(model.attributes)
-          model.id = document.id
+          model.key = document.key
           model.rev = document.revision
           model
         end
 
         def replace(model)
           return false unless model.valid?
-          document = collection.replace(model.key, model.attributes.except(:id, :rev))
+          document = collection.replace(model.key, model.attributes.except(:key, :rev))
           model.rev = document["_rev"]
           model
         end

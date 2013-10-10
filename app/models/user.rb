@@ -10,12 +10,8 @@ module Ashikawa
         include ActiveModel::Naming
         include Virtus.model
 
-        attribute :id, String
+        attribute :key, String
         attribute :rev, String
-      end
-
-      def key
-        self.id.split('/').last
       end
     end
   end
