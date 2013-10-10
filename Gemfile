@@ -28,6 +28,9 @@ gem 'jbuilder', '~> 1.2'
 # ArangoDB Adapter
 gem 'ashikawa-core'
 
+# Attribute definition on models
+gem 'virtus', '~> 1.0.0.rc2'
+
 group :doc do
   # bundle exec rake doc:rails generates the API under doc/api.
   gem 'sdoc', require: false
