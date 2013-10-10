@@ -8,15 +8,15 @@ module Ashikawa
 
       include Enumerable
 
-      def initialize(collection)
+      def initialize(collection, mapper)
         @query = collection.collection.query
-        @mapper = collection.method(:document_to_model)
+        @mapper = mapper
       end
 
       def each
         return to_enum(__callee__) unless block_given?
 
-        iterator = ->(document) { yield @mapper.call(document) }
+        iterator = ->(document) { yield @mapper.map(document) }
 
         if example
           query.by_example(example, options).each(&iterator)
@@ -29,7 +29,7 @@ module Ashikawa
         if limit or skip or example.blank?
           to_a.first
         else
-          @mapper.call(query.first_example(example))
+          @mapper.map(query.first_example(example))
         end
       end
 
@@ -76,12 +76,15 @@ module Ashikawa
         end
 
         def document_to_model(document)
-          mapper = DocumentToModelMapper.new(model_class)
           mapper.map(document)
         end
 
+        def mapper
+          @mapper ||= DocumentToModelMapper.new(model_class)
+        end
+
         def all
-          SimpleQuery.new(self)
+          SimpleQuery.new(self, mapper)
         end
 
         # TODO: Refactor duplication
@@ -110,7 +113,7 @@ module Ashikawa
         end
 
         def by_example(example)
-          query = SimpleQuery.new(self)
+          query = SimpleQuery.new(self, mapper)
           query.example = example
           query
         end
