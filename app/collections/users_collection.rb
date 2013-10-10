@@ -23,7 +23,10 @@ module Ashikawa
         end
 
         def document_to_model(document)
-          model_class.new(document.hash)
+          model = model_class.new(document.hash)
+          model.id = document.id
+          model.rev = document.revision
+          model
         end
 
         def all
@@ -32,8 +35,11 @@ module Ashikawa
           end
         end
 
+        # TODO: Refactor duplication
         def save(model)
-          collection.create_document(model.attributes)
+          document = collection.create_document(model.attributes)
+          model.id = document.id
+          model.rev = document.revision
           model
         end
 
