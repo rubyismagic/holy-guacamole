@@ -89,6 +89,9 @@ module Ashikawa
         # TODO: Refactor duplication
         def save(model)
           return false unless model.valid?
+          stamp = Time.now
+          model.created_at = stamp
+          model.updated_at = stamp
           document = collection.create_document(model.attributes)
           model.key = document.key
           model.rev = document.revision
@@ -97,6 +100,7 @@ module Ashikawa
 
         def replace(model)
           return false unless model.valid?
+          model.updated_at = Time.now
           document = collection.replace(model.key, model.attributes.except(:key, :rev))
           model.rev = document["_rev"]
           model
