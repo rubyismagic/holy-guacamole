@@ -20,6 +20,10 @@ module Ashikawa
           yield @mapper.call(document)
         end
       end
+
+      def first
+        @mapper.call(collection.query.first_example(example))
+      end
     end
 
     module Collection
