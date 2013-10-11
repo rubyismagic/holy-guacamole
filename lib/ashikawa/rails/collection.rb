@@ -138,6 +138,7 @@ module Ashikawa
         @model_class = model_class
         @embeds = []
         @references = {}
+        @referenced_by = {}
       end
 
       def embeds(attribute_name)
@@ -155,11 +156,22 @@ module Ashikawa
         }
       end
 
+      def referenced_by(model_name)
+        @referenced_by[model_name] = {
+          collection_class: "#{model_name.to_s.camelize}Collection".constantize,
+          foreign_key: "#{model_class.name.underscore}_id"
+        }
+      end
+
       def model_to_document(model)
-        document = model.attributes
+        document = model.attributes.dup
         @references.each do |attribute_name, reference_info|
           referenced_model = document.delete(reference_info[:model_class].name.underscore.to_sym)
           document[attribute_name] = referenced_model.key
+        end
+
+        @referenced_by.each do |model_name, _|
+          document.delete(model_name)
         end
 
         @embeds.each do |attribute_name|
@@ -175,7 +187,7 @@ module Ashikawa
       end
 
       def clean_embedded_model(model)
-        document = model.attributes
+        document = model.attributes.dup
         document.delete(:rev)
         document.delete(:key)
         document[:created_at] ||= Time.now
@@ -189,6 +201,10 @@ module Ashikawa
           referenced_model_key = document_hash.delete(attribute_name)
           referenced_model = reference_info[:collection_class].by_key(referenced_model_key)
           document_hash[reference_info[:model_class].name.underscore] = referenced_model
+        end
+
+        @referenced_by.each do |model_name, reference_info|
+          document_hash[model_name] = reference_info[:collection_class].by_example(reference_info[:foreign_key] => document.key)
         end
 
         model = model_class.new(document_hash)
