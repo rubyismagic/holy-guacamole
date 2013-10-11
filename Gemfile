@@ -46,7 +46,8 @@ end
 # gem 'capistrano', group: :development
 
 # Use debugger
-# gem 'debugger', group: [:development, :test]
+gem 'debugger', group: [:development, :test]
 
 gem 'better_errors', group: :development
 gem 'binding_of_caller', group: :development
+gem 'pry', group: [:development, :test]
