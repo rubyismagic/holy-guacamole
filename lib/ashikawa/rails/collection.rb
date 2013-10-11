@@ -166,8 +166,9 @@ module Ashikawa
       def model_to_document(model)
         document = model.attributes.dup
         @references.each do |attribute_name, reference_info|
-          referenced_model = document.delete(reference_info[:model_class].name.underscore.to_sym)
-          document[attribute_name] = referenced_model.key
+          if referenced_model = document.delete(reference_info[:model_class].name.underscore.to_sym)
+            document[attribute_name] = referenced_model.key
+          end
         end
 
         @referenced_by.each do |model_name, _|
@@ -199,12 +200,18 @@ module Ashikawa
         document_hash = document.hash.dup
         @references.each do |attribute_name, reference_info|
           referenced_model_key = document_hash.delete(attribute_name)
-          referenced_model = reference_info[:collection_class].by_key(referenced_model_key)
-          document_hash[reference_info[:model_class].name.underscore] = referenced_model
+
+          model_finder = ->() { reference_info[:collection_class].by_key(referenced_model_key) }
+
+          proxy_model = Ashikawa::Rails::Model::Proxy.new model_class.new, model_finder
+
+          document_hash[reference_info[:model_class].name.underscore] = proxy_model
         end
 
         @referenced_by.each do |model_name, reference_info|
-          document_hash[model_name] = reference_info[:collection_class].by_example(reference_info[:foreign_key] => document.key)
+          model_finder = ->() { reference_info[:collection_class].by_example(reference_info[:foreign_key] => document.key).to_a }
+          proxy_model = Ashikawa::Rails::Model::Proxy.new [], model_finder
+          document_hash[model_name] = proxy_model
         end
 
         model = model_class.new(document_hash)
