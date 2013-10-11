@@ -3,5 +3,6 @@ class PostsCollection
 
   map do
     embeds :comments
+    references :user
   end
 end

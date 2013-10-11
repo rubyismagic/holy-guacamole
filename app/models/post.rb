@@ -4,4 +4,5 @@ class Post
   attribute :title, String
   attribute :body, String
   attribute :comments, Array[Comment]
+  attribute :user, User
 end

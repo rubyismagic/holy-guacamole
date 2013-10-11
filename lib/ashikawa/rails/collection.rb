@@ -137,14 +137,31 @@ module Ashikawa
       def initialize(model_class)
         @model_class = model_class
         @embeds = []
+        @references = {}
       end
 
       def embeds(attribute_name)
         @embeds << attribute_name
       end
 
+      def references(model_name)
+        attribute_name = "#{model_name}_id"
+        model_class = model_name.to_s.camelize.constantize
+        collection_class = "#{model_name.to_s.pluralize.camelize}Collection".constantize
+
+        @references[attribute_name] = {
+          model_class: model_class,
+          collection_class: collection_class
+        }
+      end
+
       def model_to_document(model)
         document = model.attributes
+        @references.each do |attribute_name, reference_info|
+          referenced_model = document.delete(reference_info[:model_class].name.underscore.to_sym)
+          document[attribute_name] = referenced_model.key
+        end
+
         @embeds.each do |attribute_name|
           embedded_attribute = document[attribute_name]
 
@@ -167,7 +184,14 @@ module Ashikawa
       end
 
       def document_to_model(document)
-        model = model_class.new(document.hash)
+        document_hash = document.hash.dup
+        @references.each do |attribute_name, reference_info|
+          referenced_model_key = document_hash.delete(attribute_name)
+          referenced_model = reference_info[:collection_class].by_key(referenced_model_key)
+          document_hash[reference_info[:model_class].name.underscore] = referenced_model
+        end
+
+        model = model_class.new(document_hash)
         model.key = document.key
         model.rev = document.revision
         model
